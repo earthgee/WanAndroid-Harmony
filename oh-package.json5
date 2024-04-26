@@ -1,13 +1,15 @@
 {
-  "name": "wanandroidharmony",
-  "version": "1.0.0",
-  "description": "Please describe the basic information.",
-  "main": "",
-  "author": "",
   "license": "",
-  "dependencies": {
-  },
   "devDependencies": {
     "@ohos/hypium": "1.0.6"
+  },
+  "author": "",
+  "name": "wanandroidharmony",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "version": "1.0.0",
+  "dependencies": {
+    "@ohos/materialprogressbar": "^2.0.2",
+    "@ohos/pulltorefresh": "2.0.1"
   }
 }

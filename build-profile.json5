@@ -1,6 +1,20 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\hdf\\.ohos\\config\\auto_debug_wanproject_com.earthgee.justplay_2850086000520219221.cer",
+          "storePassword": "0000001AC87C6C0BBE102DD17A85BA5885CC412512D5B0BFFF27AF781924BECC1AA38AD6249E1719ECF9",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001AC356FF91483DAC4061DA2376C2116AF85FA34A58EF0AD3ABC01BD41FA87948C5ED2E96B89C26",
+          "profile": "C:\\Users\\hdf\\.ohos\\config\\auto_debug_wanproject_com.earthgee.justplay_2850086000520219221.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\hdf\\.ohos\\config\\auto_debug_wanproject_com.earthgee.justplay_2850086000520219221.p12"
+        }
+      }
+    ],
     "compileSdkVersion": 9,
     "compatibleSdkVersion": 9,
     "products": [

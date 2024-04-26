@@ -24,7 +24,6 @@ class StatInfo {
   finishTask: number = 0
 }
 
-@Entry
 @Component
 struct TaskPage {
 

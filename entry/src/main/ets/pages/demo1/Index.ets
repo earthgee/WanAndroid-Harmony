@@ -32,7 +32,7 @@ struct Index {
   build() {
 
     Column({space: 8}) {
-      TitleBar({title: this.stateTitle})
+      TitleBar({title: $stateTitle, showBack:false})
         .onClick(() => {
           this.stateTitle = "changed text"
         })

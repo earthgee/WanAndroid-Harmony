@@ -1,6 +1,5 @@
 import hilog from '@ohos.hilog';
 
-@Entry
 @Component
 struct Index {
   aboutToAppear() {
