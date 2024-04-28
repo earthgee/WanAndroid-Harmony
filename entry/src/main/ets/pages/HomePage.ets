@@ -1,6 +1,8 @@
 import { PullToRefresh } from '@ohos/pulltorefresh'
-import { Article, HomeBannerData } from '../net/module/Article'
+import Api from '../net/Api'
+import { Article, ArticleList, ArticleTag, HomeBannerData } from '../net/module/Article'
 import { ArticleItemBuilder } from '../widget/ArticleItemBuilder'
+import { LoadStatus, PageLoading } from '../widget/PageLoading'
 import { TitleBar } from '../widget/TitleBar'
 
 @Component
@@ -10,6 +12,68 @@ export struct HomePage {
   @State title: string = "首页"
   private scroller: Scroller = new Scroller()
 
+  @State bannerPosition: number = 0
+
+  @State loadStatus: LoadStatus = LoadStatus.LOADING
+  @State showLoading: boolean = false
+
+  //before build
+  //组件生命周期
+  async aboutToAppear() {
+    this.loadData()
+  }
+
+  async loadData() {
+    this.loadStatus = LoadStatus.LOADING
+    this.loadDataByPage(0).then(
+      (data) => {
+        this.data = data
+        if(this.data.length === 0) {
+          this.loadStatus = LoadStatus.EMPTY
+        } else {
+          this.loadStatus = LoadStatus.SUCCESS
+        }
+      },
+      (error) => {
+        this.loadStatus = LoadStatus.FAIL
+      }
+    )
+  }
+
+  loadDataByPage(page: number): Promise<Array<Object>> {
+    return new Promise<Array<Object>>(async (resolve, reject) => {
+      if(page === 0) {
+        let bannerRes = await Api.get().getHomeBanner()
+        let topRes = await Api.get().getTopArticle()
+        let articleRes = await Api.get().getHomeArticleList(page)
+
+        if(bannerRes.isSuccessWithData()
+          && topRes.isSuccessWithData()
+          && articleRes.isSuccessWithData()) {
+          let bannerList = bannerRes.data
+          let articleList = []
+          topRes.data.forEach((item) => {
+            let tag = new ArticleTag()
+            tag.name = "置顶"
+            item.tags = [tag].concat(item.tags)
+            articleList.push(item)
+          })
+          articleList = articleList.concat(articleRes.data.datas)
+          let dataList = [bannerList].concat(articleList)
+          resolve(dataList)
+        } else {
+          reject()
+        }
+      } else {
+        let articleRes = await Api.get().getHomeArticleList(page)
+        if(articleRes.isSuccessWithData()) {
+          resolve(articleRes.data.datas)
+        } else {
+          reject()
+        }
+      }
+    })
+  }
 
   build() {
     Column() {
@@ -18,17 +82,29 @@ export struct HomePage {
         showBack: false,
         menuIcon: $r('app.media.ic_search'),
         onMenuClick: () => {
-          //todo
+          //todo 搜索页
         }
       })
 
-      PullToRefresh({
-        data: $data,
-        scroller: this.scroller,
-        customList: this.ListViewBuilder,
-        customLoad: null,
-        customRefresh: null,
-      })
+      PageLoading({
+        loadStatus: $loadStatus,
+        showLoading: $showLoading,
+        onReload: () => {
+          //todo 请求数据加载
+        }
+      }) {
+        Column() {
+          PullToRefresh({
+            data: $data,
+            scroller: this.scroller,
+            customList: this.ListViewBuilder,
+            customLoad: null,
+            customRefresh: null,
+          })
+        }
+        .width('100%')
+        .height('100%')
+      }
     }
     .width('100%')
     .height('100%')

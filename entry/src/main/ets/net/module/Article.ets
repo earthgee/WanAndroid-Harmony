@@ -1,3 +1,12 @@
+export class ArticleList {
+  curPage: number = 0
+  datas: Array<Article> = []
+  offset: number = 0
+  over: boolean = false
+  pageCount: number = 0
+  size: number = 0
+  total: number = 0
+}
 
 export class Article {
   id: number = 0

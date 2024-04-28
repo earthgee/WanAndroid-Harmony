@@ -37,7 +37,7 @@ struct MainPage {
     .onChange((index) => {
       this.currentIndex = index
     })
-    .backgroundColor('#000')
+    .backgroundColor('#fff')
   }
 
   @Builder

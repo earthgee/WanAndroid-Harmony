@@ -14,7 +14,7 @@ export struct SquarePage {
   build() {
     Column() {
       TitleBar({
-        title: $title,
+        title: this.title,
         showBack: false
       })
 

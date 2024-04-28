@@ -12,7 +12,7 @@ export struct WechatPage {
   build() {
     Column() {
       TitleBar({
-        title: $title,
+        title: this.title,
         showBack: false
       })
 

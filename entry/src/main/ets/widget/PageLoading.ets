@@ -33,7 +33,17 @@ export struct PageLoading {
         this.content()
         if(this.showLoading) {
           Stack() {
-
+            MaterialProgressBar({
+              style: MaterialProgressStyle.MaterialCircular,
+              modelBuild: {
+                color: '#055ad7',
+                bgColor: '#fff',
+                indeterminate: true,
+                strokeWidth: 4
+              }
+            })
+              .margin({ left: 16, top: 16 })
+              .align(Alignment.Center)
           }
           .width(100)
           .height(100)
@@ -41,8 +51,34 @@ export struct PageLoading {
           .backgroundColor('#80000000')
           .borderRadius(8)
         }
+      } else if(this.loadStatus === LoadStatus.FAIL) {
+        Stack() {
+          Text('加载失败，点击重试')
+            .align(Alignment.Center)
+        }
+        .width('100%')
+        .height('100%')
+        .onClick(() => {
+          if(this.onReload !== undefined) {
+            this.onReload()
+          }
+        })
+      } else {
+        Stack() {
+          Text('数据为空')
+            .align(Alignment.Center)
+        }
+        .width('100%')
+        .height('100%')
+        .onClick(() => {
+          if(this.onReload !== undefined) {
+            this.onReload()
+          }
+        })
       }
     }
+    .width('100%')
+    .height('100%')
   }
 
 }
