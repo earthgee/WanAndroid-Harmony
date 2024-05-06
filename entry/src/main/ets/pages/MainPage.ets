@@ -1,3 +1,4 @@
+import PermissionUtil from '../common/PermissionUtil'
 import { HomePage } from './HomePage'
 import { IndexPage } from './IndexPage'
 import { MePage } from './MePage'
@@ -10,34 +11,39 @@ struct MainPage {
 
   tabsController = new TabsController()
   @State currentIndex: number = 0
-  //申请网络权限
+  @State isPermissionGrant: boolean = false
 
   build() {
-    Tabs({barPosition: BarPosition.End, controller: this.tabsController}) {
-      TabContent() {
-        HomePage()
-      }.tabBar(this.TabBuilder("首页", 0, $r('app.media.ic_tab_home_fill'), $r('app.media.ic_tab_home')))
+    if(this.isPermissionGrant) {
+      Tabs({barPosition: BarPosition.End, controller: this.tabsController}) {
+        TabContent() {
+          HomePage()
+        }.tabBar(this.TabBuilder("首页", 0, $r('app.media.ic_tab_home_fill'), $r('app.media.ic_tab_home')))
 
-      TabContent() {
-        SquarePage()
-      }.tabBar(this.TabBuilder("广场", 1, $r('app.media.ic_tab_discover_fill'), $r('app.media.ic_tab_discover')))
+        TabContent() {
+          SquarePage()
+        }.tabBar(this.TabBuilder("广场", 1, $r('app.media.ic_tab_discover_fill'), $r('app.media.ic_tab_discover')))
 
-      TabContent() {
-        IndexPage()
-      }.tabBar(this.TabBuilder('体系', 2, $r('app.media.ic_tab_tree_fill'), $r('app.media.ic_tab_tree')))
+        TabContent() {
+          IndexPage()
+        }.tabBar(this.TabBuilder('体系', 2, $r('app.media.ic_tab_tree_fill'), $r('app.media.ic_tab_tree')))
 
-      TabContent() {
-        WechatPage()
-      }.tabBar(this.TabBuilder('公众号', 3, $r('app.media.ic_tab_wechat_fill'), $r('app.media.ic_tab_wechat')))
+        TabContent() {
+          WechatPage()
+        }.tabBar(this.TabBuilder('公众号', 3, $r('app.media.ic_tab_wechat_fill'), $r('app.media.ic_tab_wechat')))
 
-      TabContent() {
-        MePage()
-      }.tabBar(this.TabBuilder('我的', 4, $r('app.media.ic_tab_my_fill'), $r('app.media.ic_tab_my')))
+        TabContent() {
+          MePage()
+        }.tabBar(this.TabBuilder('我的', 4, $r('app.media.ic_tab_my_fill'), $r('app.media.ic_tab_my')))
+      }
+      .onChange((index) => {
+        this.currentIndex = index
+      })
+      .backgroundColor('#fff')
+    } else {
+      Text('No Permission')
+        .textAlign(TextAlign.Center)
     }
-    .onChange((index) => {
-      this.currentIndex = index
-    })
-    .backgroundColor('#fff')
   }
 
   @Builder
@@ -54,6 +60,16 @@ struct MainPage {
     .height('100%')
     .backgroundColor('#fff')
     .justifyContent(FlexAlign.Center)
+  }
+
+  aboutToAppear() {
+    PermissionUtil.requestPermission(getContext(this), ['ohos.permission.INTERNET'])
+      .then((data) => {
+        this.isPermissionGrant = true
+      })
+      .catch((err) => {
+        this.isPermissionGrant = false
+      })
   }
 
 }

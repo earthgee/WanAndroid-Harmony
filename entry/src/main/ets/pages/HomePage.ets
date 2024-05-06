@@ -1,4 +1,4 @@
-import { PullToRefresh } from '@ohos/pulltorefresh'
+import { PullToRefresh, PullToRefreshConfigurator } from '@ohos/pulltorefresh'
 import Api from '../net/Api'
 import { Article, ArticleList, ArticleTag, HomeBannerData } from '../net/module/Article'
 import { ArticleItemBuilder } from '../widget/ArticleItemBuilder'
@@ -10,7 +10,9 @@ export struct HomePage {
 
   @State data: Array<Object> = []
   @State title: string = "首页"
+
   private scroller: Scroller = new Scroller()
+  private refreshConfig = new PullToRefreshConfigurator()
 
   @State bannerPosition: number = 0
 
@@ -90,14 +92,20 @@ export struct HomePage {
         loadStatus: $loadStatus,
         showLoading: $showLoading,
         onReload: () => {
-          //todo 请求数据加载
+          this.loadData()
         }
       }) {
         Column() {
           PullToRefresh({
             data: $data,
             scroller: this.scroller,
+            refreshConfigurator: this.refreshConfig,
             customList: this.ListViewBuilder,
+            onRefresh: () => {
+              return new Promise<string>((resolve, reject) => {
+
+              })
+            },
             customLoad: null,
             customRefresh: null,
           })
