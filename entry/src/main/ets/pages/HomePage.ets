@@ -18,6 +18,8 @@ export struct HomePage {
 
   @State loadStatus: LoadStatus = LoadStatus.LOADING
   @State showLoading: boolean = false
+  @State nextPage: number = 1
+  @State hasMore: boolean = true
 
   //before build
   //组件生命周期
@@ -103,9 +105,41 @@ export struct HomePage {
             customList: this.ListViewBuilder,
             onRefresh: () => {
               return new Promise<string>((resolve, reject) => {
-
+                this.loadDataByPage(0).then(
+                  (data) => {
+                    this.nextPage = 1
+                    this.data = data
+                    resolve('刷新成功')
+                  },
+                  (error) => {
+                    resolve('刷新失败')
+                  }
+                )
               })
             },
+            onLoadMore: () => {
+              return new Promise<string>((resolve, reject) => {
+                if(this.hasMore) {
+                  this.loadDataByPage(this.nextPage).then(
+                    (data) => {
+                      if(data.length > 0) {
+                        this.nextPage++
+                        this.data = this.data.concat(data)
+                        resolve('加载成功')
+                      } else {
+                        this.hasMore = false
+                        resolve('没有更多了')
+                      }
+                    },
+                    (error) => {
+                      resolve('加载失败')
+                    }
+                  )
+                } else {
+                  resolve('没有更多了')
+                }
+              })
+            }
             customLoad: null,
             customRefresh: null,
           })
