@@ -139,7 +139,7 @@ export struct HomePage {
                   resolve('没有更多了')
                 }
               })
-            }
+            },
             customLoad: null,
             customRefresh: null,
           })
@@ -169,6 +169,16 @@ export struct HomePage {
           }
       })
     }
+    .width('100%')
+    .height('100%')
+    .listDirection(Axis.Vertical)
+    .divider({
+      strokeWidth: 0.5,
+      color: '#eee',
+      startMargin: 16,
+      endMargin: 16
+    })
+    .edgeEffect(EdgeEffect.None) // 必须设置列表为滑动到边缘无效果
   }
 
 }

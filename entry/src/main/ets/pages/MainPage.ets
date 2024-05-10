@@ -36,6 +36,7 @@ struct MainPage {
           MePage()
         }.tabBar(this.TabBuilder('我的', 4, $r('app.media.ic_tab_my_fill'), $r('app.media.ic_tab_my')))
       }
+      .scrollable(false)
       .onChange((index) => {
         this.currentIndex = index
       })

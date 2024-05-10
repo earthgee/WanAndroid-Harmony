@@ -3,6 +3,7 @@ import { Response } from './module/Response'
 import http from '@ohos.net.http'
 import uri from '@ohos.uri'
 import hilog from '@ohos.hilog'
+import { IndexTree } from './module/IndexTree'
 
 let TAG = "Api"
 let BASE_URL = "https://www.wanandroid.com"
@@ -84,6 +85,23 @@ export default class Api {
     return requestSync(`/article/list/${page}/json`, http.RequestMethod.GET)
   }
 
+  async getSquareArticleList(page: number): Promise<Response<ArticleList>> {
+    return requestSync(`/user_article/list/${page}/json`, http.RequestMethod.GET)
+  }
 
+  async getTree(): Promise<Response<Array<IndexTree>>> {
+    return requestSync(`/tree/json`, http.RequestMethod.GET)
+  }
+
+  async getTreeArticleList(cid: number, page: number): Promise<Response<ArticleList>> {
+    return requestSync(`/article/list/${page}/json?cid=${cid}`, http.RequestMethod.GET)
+  }
 
 }
+
+
+
+
+
+
+
