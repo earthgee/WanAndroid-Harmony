@@ -7,6 +7,7 @@ import { IndexTree } from '../net/module/IndexTree'
 import { ArticleItemBuilder } from '../widget/ArticleItemBuilder'
 import { LoadStatus, PageLoading } from '../widget/PageLoading'
 import { TitleBar } from '../widget/TitleBar'
+import data from '@ohos.telephony.data'
 
 //体系页面
 @Component
@@ -18,15 +19,16 @@ export struct IndexPage {
   @State treeList: Array<IndexTree> = []
   @State data: Array<Article> = []
   @State title: string = "体系"
-  articleScroller: Scroller = new Scroller()
+  private articleScroller: Scroller = new Scroller()
+  private treeScrollLeft = new Scroller()
+  private treeScrollRight = new Scroller()
   @State selectTrees: Pair<IndexTree, IndexTree> = { first: undefined, second: undefined }
   @State selectTreeTemp: IndexTree = undefined
   //是否展示筛选
   @State showSelectLayer: boolean = false
-  @State firstStepTrees: Array<IndexTree> = []
-  @State currentSelectTree: IndexTree = undefined
   private refreshConfig = new PullToRefreshConfigurator()
   private nextPage: number = 1
+  private hasMore: boolean = true
 
   aboutToAppear() {
     this.refreshConfig.setHasRefresh(false)
@@ -102,7 +104,10 @@ export struct IndexPage {
                 .fontColor('#055ad7')
                 .fontSize(16)
               Image(this.showSelectLayer? $r('app.media.ic_arrow_up') : $r('app.media.ic_arrow_down'))
-                .margin({ left: 12 })
+                .margin({ left: 2 })
+                .width(20)
+                .height(48)
+                .padding({top: 16, bottom: 12})
             }
             .width('100%')
             .height(48)
@@ -114,90 +119,133 @@ export struct IndexPage {
                 this.selectTreeTemp = this.selectTrees.first
               } else {
                 this.showSelectLayer = true
-
+                setTimeout(() => {
+                  let selectedIndex1 = this.treeList.findIndex(item => {
+                    item.id === this.selectTrees.first.id
+                  })
+                  if(selectedIndex1 >= 0) {
+                    this.treeScrollLeft.scrollToIndex(Math.max(selectedIndex1 - 1, 0))
+                  }
+                  let selectedIndex2 = this.selectTrees.first.children.findIndex(item => {
+                    item.id === this.selectTrees.second.id
+                  })
+                  if(selectedIndex2 >= 0) {
+                    this.treeScrollRight.scrollToIndex(Math.max(selectedIndex2 - 1, 0))
+                  }
+                }, 16)
               }
             })
           }
+
+          Stack() {
+            PageLoading({
+              loadStatus: $loadStatusArticle,
+              showLoading: $showLoading,
+              onReload: () => {
+                this.loadArticleData()
+              }
+            }) {
+              Column() {
+                PullToRefresh({
+                  data: $data,
+                  scroller: this.articleScroller,
+                  customList: this.ListViewBuilder,
+                  onLoadMore: () => {
+                    return new Promise<string>((resolve, reject) => {
+                      if(this.hasMore) {
+                        this.loadArticleDataByPage(this.nextPage).then(
+                          (data) => {
+                            if(data.length > 0) {
+                              this.nextPage++
+                              this.data = this.data.concat(data)
+                              resolve('加载成功')
+                            } else {
+                              this.hasMore = false
+                              resolve('没有更多了')
+                            }
+                          },
+                          (error) => {
+                            resolve('没有更多了')
+                          }
+                        )
+                      } else {
+                        resolve('没有更多了')
+                      }
+                    })
+                  },
+                  customLoad: null,
+                  customRefresh: null,
+                })
+              }
+              .width('100%')
+              .height('100%')
+            }
+
+            if(this.showSelectLayer) {
+              Column() {
+                Row() {
+                  List({ scroller: this.treeScrollLeft }) {
+                    ForEach(this.treeList, (item: IndexTree, index: number) => {
+                      ListItem() {
+                        Text(item.name)
+                          .width('100%')
+                          .padding({ left: 12, top: 8, right: 12, bottom: 8 })
+                          .fontColor((this.selectTreeTemp.id === item.id) ? '#055ad7': '#000')
+                          .fontSize(14)
+                          .textAlign(TextAlign.Center)
+                          .onClick(() => {
+                            this.selectTreeTemp = item
+                          })
+                      }
+                    })
+                  }
+                  .width('50%')
+                  .height('100%')
+
+                  Line()
+                    .width(0.5)
+                    .height('100%')
+                    .backgroundColor('#000')
+
+                  List({ scroller: this.treeScrollRight }) {
+                    ForEach(this.selectTreeTemp.children, (item: IndexTree, index: number) => {
+                      ListItem() {
+                        Text(item.name)
+                          .width('100%')
+                          .padding({ left: 12, top: 8, right: 12, bottom: 8 })
+                          .fontColor((this.selectTrees.second.id === item.id) ? '#055ad7': '#000')
+                          .fontSize(14)
+                          .textAlign(TextAlign.Center)
+                          .onClick(() => {
+                            this.selectTrees = { first: this.selectTreeTemp, second: item }
+                            this.showSelectLayer = false
+                            this.loadArticleData()
+                          })
+                      }
+                    })
+                  }
+                  .width('50%')
+                  .height('100%')
+                }
+                .width('100%')
+                .height('70%')
+                .backgroundColor('#fff')
+              }
+              .width('100%')
+              .height('100%')
+              .backgroundColor('#80000000')
+              .onClick(() => {
+                this.showSelectLayer = false
+                this.selectTreeTemp = this.selectTrees.first
+              })
+            }
+          }
+          .width('100%')
+          .layoutWeight(1)
         }
         .width('100%')
         .height('100%')
       }
-
-      if(this.selectTrees.first && this.selectTrees.second) {
-        Row() {
-          Text(`${this.selectTrees.first.name} > ${this.selectTrees.second.name}`)
-            .fontColor('#000')
-            .fontSize(17)
-            .layoutWeight(1)
-
-          Button('切换分类')
-            .fontColor('#fff')
-            .fontSize(17)
-            .borderRadius(5)
-            .backgroundColor('#00f')
-        }
-        .width('100%')
-        .height(42)
-        .padding({left: 16, right:16})
-      }
-
-      Stack() {
-        PullToRefresh({
-          data: $data,
-          scroller: this.articleScroller,
-          customList: this.ListViewBuilder,
-          customLoad: null,
-          customRefresh: null,
-        })
-
-        if(this.showSelectLayer) {
-          Column() {
-            Row() {
-              List() {
-                ForEach(this.firstStepTrees, (item: IndexTree, index: number) => {
-                   ListItem() {
-                     Text(item.name)
-                       .width('100%')
-                       .padding(10)
-                       .fontColor((this.currentSelectTree.id === item.id) ? '#055ad7': '#000')
-                       .fontSize(14)
-                   }
-                })
-              }
-              .width('50%')
-              .height('100%')
-              .backgroundColor('#fff')
-
-              Line()
-                .width(0.5)
-                .height('100%')
-                .backgroundColor('#000')
-              
-              List() {
-                ForEach(this.currentSelectTree.children, (item: IndexTree, index: number) => {
-                  ListItem() {
-                    Text(item.name)
-                      .width('100%')
-                      .padding(10)
-                      .fontColor((this.selectTrees.second.id === item.id) ? '#055ad7': '#000')
-                      .fontSize(14)
-                  }
-                })
-              }
-              .width('50%')
-              .height('100%')
-              .backgroundColor('#fff')
-            }
-            .width('100%')
-            .height('70%')
-          }
-          .width('100%')
-          .height('100%')
-          .backgroundColor('#80000000')
-        }
-      }
-      .width('100%')
-      .layoutWeight(1)
     }
     .width('100%')
     .height('100%')
@@ -214,8 +262,17 @@ export struct IndexPage {
         }
       })
     }
+    .width('100%')
+    .height('100%')
+    .listDirection(Axis.Vertical)
+    .divider({
+      strokeWidth: 0.5,
+      color: '#eee',
+      startMargin: 16,
+      endMargin: 16
+    })
+    .edgeEffect(EdgeEffect.None) // 必须设置列表为滑动到边缘无效果
   }
-
 
 
 }

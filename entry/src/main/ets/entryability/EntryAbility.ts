@@ -1,7 +1,8 @@
 import UIAbility from '@ohos.app.ability.UIAbility';
 import hilog from '@ohos.hilog';
 import window from '@ohos.window';
-import WindowUtils from '../common/WindowUtils'
+import WindowUtils from '../common/WindowUtils';
+import EntryContext from '../common/EntryContext'
 
 export default class EntryAbility extends UIAbility {
   tag: string = "EntryAbility"
@@ -9,6 +10,7 @@ export default class EntryAbility extends UIAbility {
   //1
   onCreate(want, launchParam) {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
+    EntryContext.setContext(this.context)
   }
 
   //6

@@ -4,12 +4,17 @@ import http from '@ohos.net.http'
 import uri from '@ohos.uri'
 import hilog from '@ohos.hilog'
 import { IndexTree } from './module/IndexTree'
+import { WeChatAuthor } from './module/WeChat'
+import { User } from '../service/UserService'
+import PersistentCookieJar from './cookie/PersistentCookieJar'
+import EntryContext from '../common/EntryContext'
+import Cookie from './cookie/Cookie'
+import CookieUtils from './cookie/CookieUtils'
 
 let TAG = "Api"
 let BASE_URL = "https://www.wanandroid.com"
 
-//todo cookie
-// let cookieJar: Cook
+let cookieJar = new PersistentCookieJar(EntryContext.getContext() as Context)
 
 function parseUri(url: string): uri.URI {
   return new uri.URI(url)
@@ -17,7 +22,7 @@ function parseUri(url: string): uri.URI {
 
 async function requestSync<T>(path: string, method: http.RequestMethod,
                               extraData?: Object): Promise<Response<T>> {
-  //cookie
+  await cookieJar.init()
   return new Promise<Response<T>>((resolve, reject) => {
     let url = BASE_URL + path
     let uri = parseUri(url)
@@ -43,6 +48,7 @@ async function requestSync<T>(path: string, method: http.RequestMethod,
         let res = new Response<T>()
         if(!err && data.responseCode === 200) {
           //cookie
+          cookieJar.saveFromResponse(uri, CookieUtils.parseHttpRequestCookies(data.cookies))
           if(typeof data.result === 'string') {
             Object.assign(res, JSON.parse(data.result))
           } else {
@@ -95,6 +101,26 @@ export default class Api {
 
   async getTreeArticleList(cid: number, page: number): Promise<Response<ArticleList>> {
     return requestSync(`/article/list/${page}/json?cid=${cid}`, http.RequestMethod.GET)
+  }
+
+  async getWeChatAuthorList(): Promise<Response<Array<WeChatAuthor>>> {
+    return requestSync("/wxarticle/chapters/json", http.RequestMethod.GET)
+  }
+
+  async getWeChatArticleList(id: number, page: number): Promise<Response<ArticleList>> {
+    return requestSync(`/wxarticle/list/${id}/${page}/json`, http.RequestMethod.GET);
+  }
+
+  async getUserInfo(): Promise<Response<User>> {
+    return requestSync("/lg/coin/userinfo/json", http.RequestMethod.GET);
+  }
+
+  async login(username: string, password: string): Promise<Response<User>> {
+    return requestSync("/user/login", http.RequestMethod.POST, `username=${username}&password=${password}`)
+  }
+
+  async register(username: string, password: string, repassword: string): Promise<Response<User>> {
+    return requestSync("/user/register", http.RequestMethod.POST, `username=${username}&password=${password}&repassword=${repassword}`)
   }
 
 }
