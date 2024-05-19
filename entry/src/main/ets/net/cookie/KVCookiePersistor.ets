@@ -6,7 +6,7 @@ import dataPreferences from '@ohos.data.preferences';
 export default class KVCookiePersistor implements CookiePersistor {
 
   private context: Context
-  private preferences: dataPreferences.Preferences
+  private preferences?: dataPreferences.Preferences
 
   constructor(context: Context) {
     this.context = context
@@ -22,24 +22,42 @@ export default class KVCookiePersistor implements CookiePersistor {
   }
 
   clear() {
-throw new Error('Method not implemented.');
-}
-removeAll(cookies: Cookie[]) {
-throw new Error('Method not implemented.');
-}
+    this.checkInit().then((v) => {
+      this.preferences?.clear()
+      this.preferences?.flush()
+    })
+  }
+
+  removeAll(cookies: Cookie[]) {
+    this.checkInit().then((v) => {
+      cookies.forEach((cookie) => {
+        this.preferences?.delete(cookie.createCookieKey())
+      })
+      this.preferences?.flush()
+    })
+  }
 
   async loadAll(): Promise<Cookie[]> {
     await this.checkInit()
     let cookies: Array<Cookie> = []
-
+    let all = await this.preferences?.getAll() as Array<string>
+    for(let key of all) {
+      let value = all[key]
+      let cookie = new Cookie()
+      Object.assign(cookie, JSON.parse(value))
+      cookies.push(cookie)
+    }
+    return new Promise<Cookie[]>((resolve, reject) => {
+      resolve(cookies)
+    })
   }
 
   saveAll(cookies: Cookie[]) {
     this.checkInit().then((v) => {
       cookies.forEach((cookie) => {
-        this.preferences.put(cookie.createCookieKey(), JSON.stringify(cookie))
+        this.preferences?.put(cookie.createCookieKey(), JSON.stringify(cookie))
       })
-      this.preferences.flush()
+      this.preferences?.flush()
     })
   }
 

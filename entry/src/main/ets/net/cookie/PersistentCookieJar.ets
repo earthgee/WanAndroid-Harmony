@@ -29,12 +29,34 @@ export default class PersistentCookieJar implements CookieJar {
   }
 
   clear() {
-throw new Error('Method not implemented.');
-}
+    this.cache.clear()
+    this.persistor.clear()
+  }
 
-loadForRequest(url: uri.URI): Cookie[] {
-throw new Error('Method not implemented.');
-}
+  loadForRequest(url: uri.URI): Cookie[] {
+    let cookiesToRemove: Array<Cookie> = []
+    let validCookies: Array<Cookie> = []
+
+    let iterator = this.cache.values()
+    let result = iterator.next()
+    while(!result.done) {
+      let currentCookie: Cookie = result.value
+      if(currentCookie.isExpired()) {
+        cookiesToRemove.push(currentCookie)
+      } else if(currentCookie.matches(url)) {
+        validCookies.push(currentCookie)
+      }
+
+      result = iterator.next()
+    }
+
+    cookiesToRemove.forEach((item) => {
+      this.cache.remove(item.createCookieKey())
+    })
+
+    this.persistor.removeAll(cookiesToRemove)
+    return validCookies
+  }
 
   saveFromResponse(url: uri.URI, cookies: Cookie[]) {
     cookies.forEach((cookie) => {

@@ -27,7 +27,11 @@ async function requestSync<T>(path: string, method: http.RequestMethod,
     let url = BASE_URL + path
     let uri = parseUri(url)
     let header = {}
-    //cookie
+    let cookies = cookieJar.loadForRequest(uri)
+    if(cookies.length > 0) {
+      header['Cookie'] = CookieUtils.cookieHeader(cookies)
+    }
+
     if(method === http.RequestMethod.POST) {
       header["Content-Type"] = "application/x-www-form-urlencoded"
       if(!extraData) {
@@ -77,6 +81,10 @@ export default class Api {
       Api.instance = new Api()
     }
     return Api.instance
+  }
+
+  clearCookie() {
+    cookieJar.clear()
   }
 
   async getHomeBanner(): Promise<Response<Array<HomeBannerData>>> {

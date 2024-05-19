@@ -35,6 +35,15 @@ export default class CookieUtils {
     return cookies
   }
 
+  static cookieHeader(cookies: Array<Cookie>): string {
+    let str = ''
+    cookies.forEach((cookie, index) => {
+      if(index > 0) str += "; "
+      str += `${cookie.name}=${cookie.value}`
+    })
+    return str
+  }
+
 }
 
 

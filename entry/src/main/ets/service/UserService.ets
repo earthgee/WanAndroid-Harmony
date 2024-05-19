@@ -11,7 +11,7 @@ export default class UserService {
   private tag = "UserService"
   private key = "user_info"
   private preferences?: dataPreferences.Preferences
-  private user?: User
+  private user: User = new User()
   private userObservers: Array<(user?: User) => void> = []
 
   static get(): UserService {
@@ -30,8 +30,7 @@ export default class UserService {
     this.preferences = await dataPreferences.getPreferences(context, 'earthgeeUserKV')
     let json = await this.preferences.get(this.key, "")
     if(json) {
-      let user = new User()
-      Object.assign(user, JSON.parse(json as string))
+      let user: User = JSON.parse(json as string)
       this.user = user
       this.notifyObserver()
       this.updateUser()
@@ -74,11 +73,12 @@ export default class UserService {
     }
   }
 
-  getUser(): User {
+  getUser(): User | undefined {
     return this.user
   }
 
   setUser(user?: User) {
+    if(!user) return
     this.user = user
     if(user) {
       this.preferences?.put(this.key, JSON.stringify(user))
@@ -94,14 +94,18 @@ export default class UserService {
       return new Promise<User>((resolve, reject) => {
         if(res.isSuccessWithData()) {
           let user = this.user
-          this.user.coinCount = res.data.coinCount
-          this.user.level = res.data.level
-          this.user.rank = res.data.rank
+          this.user.coinCount = res.data?.coinCount ?? 0
+          this.user.level = res.data?.level ?? ''
+          this.user.rank = res.data?.rank ?? ''
           this.setUser(user)
           resolve(this.user)
         } else {
           reject()
         }
+      })
+    } else {
+      return new Promise<User>((resolve, reject) => {
+        reject()
       })
     }
   }

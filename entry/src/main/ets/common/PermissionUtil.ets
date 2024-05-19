@@ -17,7 +17,7 @@ export default class PermissionUtil {
           }
           resolve()
         })
-        .catch((err) => {
+        .catch((err: Error) => {
           hilog.error(0, "PermissionUtil", `requestPermissionFromUser failed, code: ${err.code}, message is ${err.message}`)
           reject()
         })
